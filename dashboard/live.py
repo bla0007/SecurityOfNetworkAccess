@@ -54,13 +54,35 @@ PROJECT_ROOT   = os.path.join(os.path.dirname(__file__), "..")
 LOG_JSON_PATH  = os.path.join(PROJECT_ROOT, "logs", "threat_log.json")
 BLOCKED_PATH   = os.path.join(PROJECT_ROOT, "logs", "blocked_ips.json")
 
+# Demo-mode fallback: when this dashboard is deployed publicly (e.g. on
+# Streamlit Community Cloud), there's no local sona.py writing live logs —
+# so if logs/ is empty/missing, fall back to bundled sample data instead.
+# This keeps ONE dashboard file working correctly both locally (live) and
+# when deployed (demo), with a clear on-screen notice either way.
+DEMO_JSON_PATH    = os.path.join(PROJECT_ROOT, "demo_logs", "threat_log.json")
+DEMO_BLOCKED_PATH = os.path.join(PROJECT_ROOT, "demo_logs", "blocked_ips.json")
+IS_DEMO_MODE = not os.path.exists(LOG_JSON_PATH) and os.path.exists(DEMO_JSON_PATH)
+
+if IS_DEMO_MODE:
+    LOG_JSON_PATH = DEMO_JSON_PATH
+    BLOCKED_PATH  = DEMO_BLOCKED_PATH
+
 # Attack severity → colour mapping used throughout
+# (covers both NSL-KDD's 5 classes and UNSW-NB15's 10)
 SEVERITY_COLORS = {
-    "Normal": "#10B981",
-    "DoS":    "#EF4444",
-    "Probe":  "#F59E0B",
-    "R2L":    "#8B5CF6",
-    "U2R":    "#DC2626",
+    "Normal":         "#10B981",
+    "DoS":            "#EF4444",
+    "Probe":          "#F59E0B",
+    "R2L":            "#8B5CF6",
+    "U2R":            "#DC2626",
+    "Exploits":       "#EF4444",
+    "Fuzzers":        "#F59E0B",
+    "Generic":        "#3B82F6",
+    "Reconnaissance": "#F59E0B",
+    "Backdoors":      "#DC2626",
+    "Analysis":       "#8B5CF6",
+    "Shellcode":      "#DC2626",
+    "Worms":          "#DC2626",
 }
 
 ACTION_COLORS = {
@@ -246,6 +268,15 @@ with h2:
         f"</div>", unsafe_allow_html=True
     )
 
+if IS_DEMO_MODE:
+    st.warning(
+        "🎭 **Demo mode** — showing bundled sample detection data, not a live feed. "
+        "Live packet capture, the automated response engine, and firewall control "
+        "are local-only by design (they require admin/root access and shouldn't "
+        "run on a public multi-tenant host). Clone the repo and run `python sona.py "
+        "--live` locally to see this dashboard driven by real traffic."
+    )
+
 if not all_events:
     st.info(
         "No events yet. Start SONA in another terminal to begin monitoring:\n\n"
@@ -351,13 +382,19 @@ st.markdown("### 🔒 Currently blocked IPs")
 if not blocked:
     st.caption("No IPs currently blocked.")
 else:
+    if IS_DEMO_MODE:
+        st.info("🔒 Public demo mode — Unblock actions are disabled here since "
+                 "this view has no real firewall to control. Run SONA locally "
+                 "(`python sona.py --live`) for full functionality.")
     for ip, info in blocked.items():
         c1, c2, c3, c4, c5 = st.columns([2, 1.5, 1.5, 2, 1])
         c1.markdown(f"**{ip}**")
         c2.markdown(f"`{info.get('attack_type','?')}`")
         c3.markdown(f"{info.get('confidence',0):.0%} conf.")
         c4.caption(f"Blocked: {info.get('blocked_at','')}")
-        if c5.button("Unblock", key=f"unblock_{ip}"):
+        if IS_DEMO_MODE:
+            c5.button("Unblock", key=f"unblock_{ip}", disabled=True)
+        elif c5.button("Unblock", key=f"unblock_{ip}"):
             ok = unblock_ip_action(ip, info.get("rule_name", ""))
             if ok:
                 st.success(f"Unblocked {ip}")

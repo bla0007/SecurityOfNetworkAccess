@@ -18,6 +18,12 @@ models_unsw/*.pkl
 *.pcapng
 logs/
 
+# Bundled demo data for the public dashboard deploy — KEEP these,
+# despite the *.csv/*.txt rules above ignoring csv/txt everywhere else
+!demo_logs/
+!demo_logs/*.json
+!demo_logs/*.csv
+
 # Jupyter artifacts
 .ipynb_checkpoints/
 __pycache__/
