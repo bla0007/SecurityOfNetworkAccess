@@ -1,0 +1,35 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Data files (too large for GitHub)
+data/
+*.txt
+*.csv
+*.arff
+
+# Model files (regenerate with train.py / train_unsw.py)
+models/*.pkl
+models_unsw/*.pkl
+
+# Captured traffic / analysis artifacts
+*.pcap
+*.pcapng
+logs/
+
+# Jupyter artifacts
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Plots (optional — you may want to keep these for README)
+# plots/
+# plots_unsw/
