@@ -26,6 +26,14 @@ __pycache__/
 # macOS
 .DS_Store
 
+# Windows
+desktop.ini
+Thumbs.db
+
+# Exported analysis reports (local test data, not project code)
+report.json
+report.csv
+
 # IDE
 .vscode/
 .idea/
