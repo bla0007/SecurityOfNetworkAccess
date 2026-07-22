@@ -1,4 +1,4 @@
-# SONA — Security of Network Access
+# *Security of Network Access*
 
 An ML-powered Network Intrusion Detection & Prevention System that watches
 live network traffic, classifies it against real attack patterns, and
